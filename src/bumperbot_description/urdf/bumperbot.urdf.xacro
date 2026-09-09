@@ -2,21 +2,49 @@
 
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="bumperbot">
 
-    <link name="base_footprint"/>
+    <xacro:include filename="$(find bumperbot_description)/urdf/bumperbot_gazebo.xacro"/>
+    <xacro:include filename="$(find bumperbot_description)/urdf/bumperbot_ros2_control.xacro"/>
+
+    <link name="base_footprint">
+        <inertial>
+            <mass value="0.001"/>
+            <inertia
+                ixx="0.000001"
+                ixy="0.0"
+                ixz="0.0"
+                iyy="0.000001"
+                iyz="0.0"
+                izz="0.000001"/>
+        </inertial>
+    </link>
 
     <link name="base_link">
+
+        <inertial>
+            <mass value="1.0"/>
+            <inertia
+                ixx="0.001"
+                ixy="0.0"
+                ixz="0.0"
+                iyy="0.001"
+                iyz="0.0"
+                izz="0.001"/>
+        </inertial>
+
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <geometry>
-                <mesh filename="package://bumperbot_description/meshes/base_link.STL"/>
+                <mesh filename="file://$(find bumperbot_description)/meshes/base_link.STL"/>
             </geometry>
         </visual>
+
         <collision>
             <origin rpy="0 0 0" xyz="0 0 0"/>
             <geometry>
-                <mesh filename="package://bumperbot_description/meshes/base_link.STL"/>
+                <box size="0.12 0.10 0.08"/>
             </geometry>
         </collision>
+
     </link>
 
     <joint name="base_joint" type="fixed">
@@ -26,12 +54,33 @@
     </joint>
 
     <link name="wheel_right_link">
+
+        <!-- Added for Gazebo diagnostic -->
+        <inertial>
+            <mass value="0.1"/>
+            <inertia
+                ixx="0.0001"
+                ixy="0.0"
+                ixz="0.0"
+                iyy="0.0001"
+                iyz="0.0"
+                izz="0.0001"/>
+        </inertial>
+
         <visual>
-            <origin xyz="0 0 0" rpy="1.57 0 0"/>
+            <origin rpy="1.57 0 0" xyz="0 0.015 0"/>
             <geometry>
-                <mesh filename="package://bumperbot_description/meshes/wheel_right_link.STL"/>
+                <mesh filename="file://$(find bumperbot_description)/meshes/wheel_right_link.STL"/>
             </geometry>
         </visual>
+
+        <collision>
+            <origin rpy="1.57 0 0" xyz="0 -0.015 0"/>
+            <geometry>
+                <sphere radius="0.033"/>
+            </geometry>
+        </collision>
+
     </link>
 
     <joint name="wheel_right_joint" type="continuous">
@@ -42,12 +91,32 @@
     </joint>
 
     <link name="wheel_left_link">
+
+        <inertial>
+            <mass value="0.1"/>
+            <inertia
+                ixx="0.0001"
+                ixy="0.0"
+                ixz="0.0"
+                iyy="0.0001"
+                iyz="0.0"
+                izz="0.0001"/>
+        </inertial>
+
         <visual>
-            <origin xyz="0 0 0" rpy="-1.57 0 0"/>
+            <origin rpy="1.57 0 0" xyz="0 0.015 0"/>
             <geometry>
-                <mesh filename="package://bumperbot_description/meshes/wheel_left_link.STL"/>
+                <mesh filename="file://$(find bumperbot_description)/meshes/wheel_left_link.STL"/>
             </geometry>
         </visual>
+
+        <collision>
+            <origin rpy="1.57 0 0" xyz="0 0.015 0"/>
+            <geometry>
+                <sphere radius="0.033"/>
+            </geometry>
+        </collision>
+
     </link>
 
     <joint name="wheel_left_joint" type="continuous">
@@ -58,12 +127,21 @@
     </joint>
 
     <link name="caster_front_link">
+
         <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <mesh filename="package://bumperbot_description/meshes/caster_front_link.STL"/>
+                <mesh filename="file://$(find bumperbot_description)/meshes/caster_front_link.STL"/>
             </geometry>
         </visual>
+
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <sphere radius="0.005"/>
+            </geometry>
+        </collision>
+
     </link>
 
     <joint name="caster_front_joint" type="fixed">
@@ -73,12 +151,21 @@
     </joint>
 
     <link name="caster_rear_link">
+
         <visual>
-            <origin xyz="0.0 0.0 0.0" rpy="0.0 0.0 0.0"/>
+            <origin xyz="0 0 0" rpy="0 0 0"/>
             <geometry>
-                <mesh filename="package://bumperbot_description/meshes/caster_rear_link.STL"/>
+                <mesh filename="file://$(find bumperbot_description)/meshes/caster_rear_link.STL"/>
             </geometry>
         </visual>
+
+        <collision>
+            <origin rpy="0 0 0" xyz="0 0 0"/>
+            <geometry>
+                <sphere radius="0.005"/>
+            </geometry>
+        </collision>
+
     </link>
 
     <joint name="caster_rear_joint" type="fixed">
