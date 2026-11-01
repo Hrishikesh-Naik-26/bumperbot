@@ -87,8 +87,8 @@ def generate_launch_description():
         use_python_arg,
         wheel_radius_arg, 
         wheel_seperation_arg,
+        use_simple_controller_arg,
         wheel_controller_spawner,
         joint_state_broadcaster_spawner,
-        simple_controller,
-        use_simple_controller_arg
+        simple_controller
     ])
