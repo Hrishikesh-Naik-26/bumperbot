@@ -14,7 +14,7 @@ class SimpleTfKinematics(Node):
         self.static_transform_stamped_ = TransformStamped()
         self.dynamic_transform_stamped_ = TransformStamped()
 
-        self.x_increment_ = 0.05
+        self.x_increment_ = 0.00
         self.last_x_ = 0.0
 
         self.static_transform_stamped_ = TransformStamped()
