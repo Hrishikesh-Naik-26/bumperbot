@@ -6,6 +6,7 @@ from tf2_ros.buffer import Buffer
 from tf2_ros.transform_listener import TransformListener
 from geometry_msgs.msg import TransformStamped
 from bumperbot_msgs.srv import GetTransform
+from tf_transformations import quaternion_from_euler, quaternion_multiply, quaternion_inverse
 
 class SimpleTfKinematics(Node):
     def __init__(self):
@@ -19,6 +20,9 @@ class SimpleTfKinematics(Node):
 
         self.x_increment_ = 0.01
         self.last_x_ = 0.0
+        self.last_orientation_ = quaternion_from_euler(0, 0, 0)
+        self.rotations_counter_ = 0
+        self.rotation_increment_ = quaternion_from_euler(0, 0, 0.5)
 
         self.tf_buffer_ = Buffer()
         self.tf_listener_ = TransformListener(self.tf_buffer_, self)
@@ -50,14 +54,22 @@ class SimpleTfKinematics(Node):
         self.dynamic_transform_stamped_.transform.translation.x = self.last_x_ + self.x_increment_
         self.dynamic_transform_stamped_.transform.translation.y = 0.0
         self.dynamic_transform_stamped_.transform.translation.z = 0.0
-        self.dynamic_transform_stamped_.transform.rotation.x = 0.0
-        self.dynamic_transform_stamped_.transform.rotation.y = 0.0
-        self.dynamic_transform_stamped_.transform.rotation.z = 0.0
-        self.dynamic_transform_stamped_.transform.rotation.w = 1.0
+        q = quaternion_multiply(self.last_orientation_, self.rotation_increment_)
+        self.dynamic_transform_stamped_.transform.rotation.x = q[0]
+        self.dynamic_transform_stamped_.transform.rotation.y = q[1]
+        self.dynamic_transform_stamped_.transform.rotation.z = q[2]
+        self.dynamic_transform_stamped_.transform.rotation.w = q[3]
 
         self.dynamic_tf_broadcaster_.sendTransform(self.dynamic_transform_stamped_)
 
         self.last_x_ = self.dynamic_transform_stamped_.transform.translation.x
+
+        self.last_orientation_ = q
+        self.rotations_counter_ += 1
+
+        if (self.rotations_counter_ >= 100) :
+            self.rotation_increment_ = quaternion_inverse(self.rotation_increment_)
+            self.rotations_counter_ = 0
 
     def getTransformCallback(self, req, res):
         self.get_logger().info(f"Requested transform between {req.frame_id} and {req.child_frame_id}")

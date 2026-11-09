@@ -2,9 +2,13 @@
 
 import rclpy
 from rclpy.node import Node
+from rclpy.time import Time
 from std_msgs.msg import Float64MultiArray
 from geometry_msgs.msg import TwistStamped
+from sensor_msgs.msg import JointState
 import numpy as np
+from rclpy.constants import S_TO_NS
+import math
 
 class SimpleController(Node):
     def __init__(self):
@@ -19,8 +23,17 @@ class SimpleController(Node):
         self.get_logger().info(f"Using wheel radius {self.wheel_radius_}")
         self.get_logger().info(f"Using wheel seperation {self.wheel_seperation_}")
 
+        self.left_wheel_prev_pos_ = 0.0
+        self.right_wheel_prev_pos_ = 0.0
+        self.prev_time_ = self.get_clock().now()
+
+        self.x_ = 0.0
+        self.y_ = 0.0
+        self.theta_ = 0.0
+
         self.wheel_cmd_pub_ = self.create_publisher(Float64MultiArray, "simple_velocity_controller/commands", 10)
         self.vel_sub_ = self.create_subscription(TwistStamped, "bumperbot_controller/cmd_vel", self.velCallback, 10)
+        self.joint_sub_ = self.create_subscription(JointState, "joint_states", self.jointCallback, 10)
 
         self.speed_conversion_ = np.array([[self.wheel_radius_/2, self.wheel_radius_/2],
                                            [-self.wheel_radius_/self.wheel_seperation_, self.wheel_radius_/self.wheel_seperation_]])
@@ -35,6 +48,31 @@ class SimpleController(Node):
         wheel_speed_msg = Float64MultiArray()
         wheel_speed_msg.data = [wheel_speed[1, 0], wheel_speed[0, 0]]
         self.wheel_cmd_pub_.publish(wheel_speed_msg)
+
+    def jointCallback(self, msg):
+        dp_left = msg.position[1] - self.left_wheel_prev_pos_
+        dp_right = msg.position[0] - self.right_wheel_prev_pos_
+        dt = Time.from_msg(msg.header.stamp) - self.prev_time_
+
+        self.left_wheel_prev_pos_ = msg.position[1]
+        self.right_wheel_prev_pos_ = msg.position[0]
+        self.prev_time_ = Time.from_msg(msg.header.stamp)
+
+        fi_left = dp_left / (dt.nanoseconds / S_TO_NS)
+        fi_right = dp_right / (dt.nanoseconds / S_TO_NS)
+
+        linear = (self.wheel_radius_ * fi_right + self.wheel_radius_ * fi_left) / 2
+        angular = (self.wheel_radius_ * fi_right - self.wheel_radius_ * fi_left) / self.wheel_seperation_
+
+        d_s = (self.wheel_radius_ * dp_right + self.wheel_radius_ * dp_left) / 2
+        d_theta = (self.wheel_radius_ * dp_right - self.wheel_radius_ * dp_left) / self.wheel_seperation_ 
+
+        self.x_ = d_s * math.cos(self.theta_)
+        self.y_ = d_s * math.sin(self.theta_)
+        self.theta_ += d_theta
+
+        self.get_logger().info(f"Linear: {linear}, Angular: {angular}")
+        self.get_logger().info(f"x: {self.x_}, y: {self.y_}, theta: {self.theta_}")
 
 def main():
     rclpy.init()
