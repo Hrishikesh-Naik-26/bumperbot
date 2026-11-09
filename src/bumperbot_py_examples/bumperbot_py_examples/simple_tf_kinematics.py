@@ -17,7 +17,7 @@ class SimpleTfKinematics(Node):
         self.static_transform_stamped_ = TransformStamped()
         self.dynamic_transform_stamped_ = TransformStamped()
 
-        self.x_increment_ = 0.00
+        self.x_increment_ = 0.01
         self.last_x_ = 0.0
 
         self.tf_buffer_ = Buffer()
@@ -63,9 +63,9 @@ class SimpleTfKinematics(Node):
         self.get_logger().info(f"Requested transform between {req.frame_id} and {req.child_frame_id}")
         requested_transform = TransformStamped()
         try:
-            requested_transform = self.tf_buffer_.lookup_transform(req.frame_id, req.child_frame_id, rclpy.time.time())
+            requested_transform = self.tf_buffer_.lookup_transform(req.frame_id, req.child_frame_id, rclpy.time.Time())
         except TransformException as e:
-            self.get_logger().info(f"An error occured while transforming {req.frame_id} and {req.child_frame.id}")
+            self.get_logger().info(f"An error occured while transforming {req.frame_id} and {req.child_frame_id}")
             res.success = False
             return res
 
