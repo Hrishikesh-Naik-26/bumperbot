@@ -1,13 +1,22 @@
 <?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="bumperbot">
 
-<robot name="bumperbot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+    <ros2_control name="RobotSystem" type="system">
 
-    <ros2_control type="system" name="RobotSystem">
-        <hardware>
-            <plugin>gazebo_ros2_control/GazeboSystem</plugin>
-        </hardware>
+        <xacro:if value="$(arg is_sim)">
+            <hardware>
+                <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+            </hardware>
+        </xacro:if>
 
-        <joint name="wheel_right_joint">
+        <xacro:unless value="$(arg is_sim)">
+            <hardware>
+                <plugin>bumperbot_firmware/BumperbotInterface</plugin>
+                <param name="port">/dev/ttyUSB0</param>
+            </hardware>
+        </xacro:unless>
+
+        <joint name="wheel_left_joint">
             <command_interface name="velocity">
                 <param name="min">-1</param>
                 <param name="max">1</param>
@@ -16,7 +25,7 @@
             <state_interface name="velocity"/>
         </joint>
 
-        <joint name="wheel_left_joint">
+        <joint name="wheel_right_joint">
             <command_interface name="velocity">
                 <param name="min">-1</param>
                 <param name="max">1</param>
