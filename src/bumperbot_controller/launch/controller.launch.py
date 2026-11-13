@@ -69,7 +69,8 @@ def generate_launch_description():
                     package="bumperbot_controller",
                     executable="simple_controller.py",
                     parameters=[{"wheel_radius": wheel_radius,
-                                "wheel_seperation": wheel_seperation}],
+                                "wheel_seperation": wheel_seperation,
+                                "use_sim_time": True}],
                     condition=IfCondition(use_python)
                 ),
 
@@ -77,7 +78,8 @@ def generate_launch_description():
                     package="bumperbot_controller",
                     executable="simple_controller",
                     parameters=[{"wheel_radius": wheel_radius,
-                                "wheel_seperation": wheel_seperation}],
+                                "wheel_seperation": wheel_seperation,
+                                "use_sim_time": True}],
                     condition=UnlessCondition(use_python)
                 ),
             ]
