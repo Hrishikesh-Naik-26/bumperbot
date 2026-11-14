@@ -11,6 +11,10 @@ class KeyboardTeleop(Node):
 
         self.linear_velocity = 0.0
         self.angular_velocity = 0.0
+        self.target_linear_velocity = 0.0
+        self.target_angular_velocity = 0.0
+        self.linear_velocity_delta = 0.01
+        self.angular_velocity_delta = 0.01
 
         self.velocity_timer_ = self.create_timer(0.05, self.publish_velocity)
 
@@ -26,16 +30,16 @@ class KeyboardTeleop(Node):
             key = key.char
             match key:
                 case 'w':
-                    self.linear_velocity = 0.2
+                    self.target_linear_velocity = 0.2
 
                 case 's':
-                    self.linear_velocity = -0.2
+                    self.target_linear_velocity = -0.2
 
                 case 'a':
-                    self.angular_velocity = 0.5
+                    self.target_angular_velocity = 0.5
 
                 case 'd':
-                    self.angular_velocity = -0.5
+                    self.target_angular_velocity = -0.5
 
                 case 'q':
                     rclpy.shutdown()
@@ -50,16 +54,16 @@ class KeyboardTeleop(Node):
             key = key.char
             match key:
                 case 'w':
-                    self.linear_velocity = 0.0
+                    self.target_linear_velocity = 0.0
 
                 case 's':
-                    self.linear_velocity = 0.0
+                    self.target_linear_velocity = 0.0
 
                 case 'a':
-                    self.angular_velocity = 0.0
+                    self.target_angular_velocity = 0.0
 
                 case 'd':
-                    self.angular_velocity = 0.0
+                    self.target_angular_velocity = 0.0
 
                 case _:
                     pass
@@ -69,6 +73,29 @@ class KeyboardTeleop(Node):
     def publish_velocity(self):
         msg = TwistStamped()
         msg.header.stamp = self.get_clock().now().to_msg()
+
+        if (self.linear_velocity < self.target_linear_velocity):
+            self.linear_velocity += self.linear_velocity_delta
+            if (abs(self.target_linear_velocity - self.linear_velocity) <= self.linear_velocity_delta):
+                self.linear_velocity = self.target_linear_velocity
+        elif(self.linear_velocity > self.target_linear_velocity):
+            self.linear_velocity -= self.linear_velocity_delta
+            if (abs(self.target_linear_velocity - self.linear_velocity) <= self.linear_velocity_delta):
+                self.linear_velocity = self.target_linear_velocity
+        else:
+            self.linear_velocity = self.target_linear_velocity
+
+        if (self.angular_velocity < self.target_angular_velocity):
+            self.angular_velocity += self.angular_velocity_delta
+            if (abs(self.target_angular_velocity - self.angular_velocity) <= self.angular_velocity_delta):
+                self.angular_velocity = self.target_angular_velocity
+        elif (self.angular_velocity > self.target_angular_velocity):
+            self.angular_velocity -= self.angular_velocity_delta
+            if (abs(self.target_angular_velocity - self.angular_velocity) <= self.angular_velocity_delta):
+                self.angular_velocity = self.target_angular_velocity
+        else:
+            self.angular_velocity = self.target_angular_velocity
+            
         msg.twist.linear.x = self.linear_velocity
         msg.twist.angular.z = self.angular_velocity
 
