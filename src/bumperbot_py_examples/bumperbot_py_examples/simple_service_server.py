@@ -14,7 +14,6 @@ class SimpleServiceServer(Node):
         self.get_logger().info(f"new request received a: {req.a} and b: {req.b}")
         res.sum = req.a + req.b
         self.get_logger().info(f"Returning sum: {res.sum}")
-
         return res
 
 def main():

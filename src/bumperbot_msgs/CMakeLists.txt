@@ -11,6 +11,7 @@ find_package(rosidl_default_generators REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
+  "action/Fibonnaci.action"
   "srv/Addtwoints.srv"
   "srv/GetTransform.srv"
   DEPENDENCIES geometry_msgs
